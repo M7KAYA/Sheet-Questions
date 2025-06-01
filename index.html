@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sheet Question</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #3498db 0%, #6dd5fa 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .container {
+        width: 420px;
+        background: #ffffff;
+        padding: 30px 25px;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      #question-text {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 25px;
+        color: #333;
+        padding: 14px 20px;
+        background-color: #e3f2fd;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
+        display: inline-block;
+        max-width: 100%;
+        line-height: 1.4;
+        user-select: none;
+      }
+      .btn-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 15px;
+      }
+      button {
+        padding: 12px;
+        font-size: 16px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        background-color: #3498db;
+        color: white;
+        transition: background-color 0.3s ease, transform 0.1s ease;
+      }
+      button:hover {
+        background-color: #2980b9;
+        transform: scale(1.02);
+      }
+      button:disabled {
+        background-color: #bdc3c7;
+        cursor: not-allowed;
+      }
+      .correct {
+        background-color: #2ecc71 !important;
+      }
+      .wrong {
+        background-color: #e74c3c !important;
+      }
+      .answer-btn:last-of-type {
+        margin-bottom: 10px;
+      }
+      #question-number {
+        margin-bottom: 15px;
+        font-size: 16px;
+        color: #666;
+        font-weight: 500;
+      }
+      #result-box {
+        margin-top: 20px;
+        font-size: 20px;
+        font-weight: bold;
+        color: #2c3e50;
+        padding: 12px;
+        background-color: #dfefff;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+      .hide {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2 id="quiz-title">Sheet Question</h2>
+
+      <div id="start-box">
+        <button id="start-btn">Start</button>
+      </div>
+      <div id="quiz-box" class="hide">
+        <div id="question-number"></div>
+        <div id="question-text"></div>
+        <div id="answer-buttons" class="btn-grid"></div>
+        <button id="next-btn" disabled>Next</button>
+      </div>
+      <div id="result-box" class="hide">
+        <h3>Your Score</h3>
+        <p id="score-text"></p>
+        <button id="try-again-btn">Try Again</button>
+      </div>
+    </div>
+    <script>
+      const allQuestions = [
+        {
+          question: "Extrinsic motivation factors include:",
+          options: ["Responsibility", "Job nature", "Salary", "Competency"],
+          correctIndex: 2,
+        },
+        {
+          question: "Physical symptoms of stress include the following except:",
+          options: [
+            "Headaches",
+            "Dizziness",
+            "High blood pressure",
+            "Restlessness",
+          ],
+          correctIndex: 3,
+        },
+        {
+          question: "Example of expectancy-value model:",
+          options: [
+            "Social Learning Theory",
+            "Attribution Model",
+            "Health Perception Approach",
+            "Social Networks/Social Support Theories",
+          ],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Social Learning Theory posits that the potential for behavior to occur in any specific situation is a function of the expectancy that:",
+          options: [
+            "The behavior will lead to a particular reinforcement in that situation.",
+            "Most human behavior is under voluntary control and hence is largely guided by intention.",
+            "Explain and predict behavior in health context.",
+            "The potential benefit and costs involved in undertaking the particular action.",
+          ],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Through The Health Belief Model (HBM), an individual undertaking a particular action is seen as a function of the individual's perception of:",
+          options: [
+            "Emotional support",
+            "The seriousness of the illness",
+            "A particular reinforcement in that situation.",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question: "Characteristics of social networks:",
+          options: [
+            "Functional, such as providing social support",
+            "Interactional such as size (number of people)",
+            "Structural which include reciprocity (mutual sharing)",
+            "Informational support such as providing advice",
+          ],
+          correctIndex: 0,
+        },
+        {
+          question: "Kinds of supportive behaviors or acts:",
+          options: [
+            "Functional, such as providing social support.",
+            "Appraisal support such as affirming each other and giving feedback.",
+            "Emotional support such as offering real aid in the form of labor, money, time.",
+            "Instrumental support such as listening, showing trust and concern.",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question: "Naturalistic theories of disease causation tend to view:",
+          options: [
+            "Illness related to behaviors result from a series of decisions based on how patients view their current health situations.",
+            "Health as a state of harmony between a human being and his or her environment.",
+            "Causes that individuals infer from outcomes that have occurred in the past.",
+            "The potential benefit and costs involved in undertaking the particular action.",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which of the following is a factor that influences personality formation?",
+          options: [
+            "Environmental Factors",
+            "Physical Factors",
+            "Satisfaction of fundamental needs",
+          ],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "What is the main influence of genetic factors on personality?",
+          options: [
+            "They determine behavior based on cultural values.",
+            "They influence traits such as extroversion, neuroticism, and conscientiousness.",
+            "They affect only physical appearance, not behavior.",
+            "They have no impact on personality traits.",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "How can life experiences such as trauma impact personality?",
+          options: [
+            "They can have no effect on personality traits.",
+            "They can shape resilience and coping mechanisms.",
+            "They only influence physical traits.",
+            "They lead to permanent changes in genetics.",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "How do cultural and societal values influence personality?",
+          options: [
+            "They solely determine an individual’s intelligence.",
+            "They shape acceptable behaviors, values, and beliefs.",
+            "They have no effect on personality traits.",
+            "They mainly influence physical appearance.",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which part of Freud’s model of personality is responsible for pursuing only pleasure and instant gratification?",
+          options: ["The Super-Ego", "The Ego", "The Id", "The Conscious Mind"],
+          correctIndex: 2,
+        },
+        {
+          question:
+            "The part of the personality that is aware of reality and considers the consequences of an action is called:",
+          options: ["The Super-Ego", "The Id", "The Ego", "The Unconscious"],
+          correctIndex: 2,
+        },
+        {
+          question:
+            "Which of the following statements best describes the role of the Ego in Freud's theory?",
+          options: [
+            "It operates on the pleasure principle and seeks immediate gratification.",
+            "It represents the moral standards of society and enforces guilt.",
+            "It mediates between the demands of the Id and the moral constraints of the Super-Ego.",
+            "It has no real connection to reality, focusing only on unconscious desires.",
+          ],
+          correctIndex: 2,
+        },
+        {
+          question:
+            "Which of the following is a characteristic of someone who scores high in Openness to Experience?",
+          options: [
+            "Prefers routine and traditional ways",
+            "Is artistic, creative, and curious.",
+            "Is highly reliable and goal-oriented.",
+            "Is social and enjoys interacting with others",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Conscientiousness is associated with which of the following traits?",
+          options: [
+            "Impulsivity and procrastination",
+            "Dependability and organization",
+            "Emotional instability and anxiety",
+            "Introversion and quietness",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question: "Someone who scores low in Extraversion is most likely to:",
+          options: [
+            "Enjoy social interactions and seek stimulation",
+            "Prefer to spend time alone and introspect",
+            "Be talkative and assertive in groups",
+            "Be energetic and enthusiastic about new activities",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which of the following describes a person who scores high in Agreeableness?",
+          options: [
+            "Rude, blunt, and sarcastic",
+            "Competitive, assertive, and outspoken",
+            "Cooperative, kind, and friendly",
+            "Impulsive, disorganized, and distracted",
+          ],
+          correctIndex: 2,
+        },
+        {
+          question:
+            "A person who scores high in Neuroticism is more likely to:",
+          options: [
+            "Be calm and emotionally stable",
+            "Experience persistent negative emotions like anxiety or depression",
+            "Be sociable and outgoing",
+            "Prefer routine and dislike change",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which of the following is a trait most associated with someone who scores low in Agreeableness?",
+          options: [
+            "Kindness and empathy",
+            "Bluntness, rudeness, and sarcasm",
+            "Dependability and organization",
+            "Anxiety and emotional instability",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question: "What is associative learning?",
+          options: [
+            "Learning that occurs by observing others",
+            "Learning that involves associations between events or stimuli",
+            "Learning that results from insight or mental planning",
+            "Learning that requires trial and error",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which of the following is an example of classical conditioning?",
+          options: [
+            "A child learns that striking a sibling will lead to disapproval from parents.",
+            "A baby learns that the sight of a breast will be followed by the taste of milk.",
+            "A dog learns to sit when commanded by its owner.",
+            "A child learns to solve puzzles after repeated attempts.",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which method of learning is most commonly associated with observing others?",
+          options: [
+            "Trial and error",
+            "Conditioning",
+            "Imitation",
+            "Insight learning",
+          ],
+          correctIndex: 2,
+        },
+        {
+          question: "Trial and error learning is most commonly observed in:",
+          options: [
+            "Humans exclusively",
+            "Animals, especially in problem-solving tasks",
+            "Observational learning",
+            "Insight learning",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which of the following is true about classical conditioning?",
+          options: [
+            "It involves learning a response through consequences and reinforcement.",
+            "It is the process of learning to associate two stimuli, where one event predicts another.",
+            "It requires trial and error to learn.",
+            "It is only applicable to animals, not humans.",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which of the following is the definition of reinforcement in operant conditioning?",
+          options: [
+            "Any event that weakens the behavior it follows",
+            "Any event that strengthens the behavior it follows",
+            "A consequence that has no effect on the behavior",
+            "A neutral event that occurs before a behavior",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question: "What is the goal of punishment in operant conditioning?",
+          options: [
+            "To reinforce a behavior",
+            "To increase the frequency of a behavior",
+            "To decrease the frequency of a behavior",
+            "To remove a neutral stimulus",
+          ],
+          correctIndex: 2,
+        },
+        {
+          question:
+            "What is the main goal of flooding in classical conditioning?",
+          options: [
+            "To gradually expose a person to their fear until it is no longer triggered",
+            "To help a person learn relaxation techniques while facing their fears",
+            "To force a person to confront their fear directly and intensely",
+            "To avoid confronting fears altogether",
+          ],
+          correctIndex: 2,
+        },
+        {
+          question:
+            "Which of the following best describes systematic desensitization?",
+          options: [
+            "Gradually exposing someone to a feared object or situation while helping them stay calm",
+            "Forcing someone to face their fears without escape to break the fear response",
+            "Pairing a feared object with an unpleasant stimulus to stop a behavior",
+            "Providing a reward for facing a fear in order to reinforce bravery",
+          ],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Which technique in operant conditioning involves removing an unpleasant stimulus after a behavior to increase the likelihood of that behavior being repeated?",
+          options: [
+            "Positive reinforcement",
+            "Negative reinforcement",
+            "Punishment",
+            "Extinction",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which of the following is an example of extinction in operant conditioning?",
+          options: [
+            "A child is given a reward for completing their homework on time.",
+            "A child’s loud screaming is ignored, leading the child to scream less in the future.",
+            "A person is reprimanded for not completing their task.",
+            "A child receives a time-out for misbehaving.",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question: "From the structure of human behavior is:",
+          options: ["Cognition", "Memory", "Images", "Perception"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Attitudes towards the individual self is one of concepts of positive mental health means:",
+          options: [
+            "Ability of the individual to plan for the future.",
+            "Ability of the individual to tolerate tension",
+            "Ability to the individual to accept one's self.",
+            "Ability of the individual to make his own decision.",
+          ],
+          correctIndex: 2,
+        },
+        {
+          question: "The way an individual reacts to a certain stimulus:",
+          options: ["Behavior", "Need", "Conflict", "Adaptation"],
+          correctIndex: 0,
+        },
+        {
+          question: "Sadness, happiness and anger are types of:",
+          options: ["Perception", "Emotions", "Thoughts", "Behavior"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "...... characterized by persistent sadness and loss of interest in activities:",
+          options: [
+            "Bipolar disorder",
+            "Schizophrenia",
+            "Major Depressive Disorder",
+            "Dysthymic disorder",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which of the following components of human behavior refers to everything that can be observed or measured by physiological sensors?",
+          options: ["Cognition", "Emotions", "Actions", "Beliefs"],
+          correctIndex: 2,
+        },
+        {
+          question: "Emotions, as a component of human behavior, influence:",
+          options: [
+            "Only thoughts",
+            "Only physical changes",
+            "Thoughts and behavior",
+            "Only actions",
+          ],
+          correctIndex: 2,
+        },
+        {
+          question:
+            "Which of the following statements is most closely associated with the theory of behaviorism?",
+          options: [
+            "Behavior is influenced by biological maturation and changes across different life stages.",
+            "Behavior is learned through interactions with the environment, with stimuli linked to responses.",
+            "Behavior is primarily shaped by unconscious drives and desires.",
+            "Behavior is genetically determined and does not change with experience.",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Which of the following is NOT a key element of psychological factors as described?",
+          options: [
+            "Cognition",
+            "Emotions",
+            "Physical strength",
+            "Personality traits",
+          ],
+          correctIndex: 2,
+        },
+        {
+          question:
+            "Which of the following is NOT a common sign or symptom of mental illness?",
+          options: [
+            "Confused thinking.",
+            "Consistent and stable mood.",
+            "Dramatic changes in eating or sleeping habits.",
+            "Social withdrawal",
+          ],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Behavior is an action that has a specific frequency, duration and purpose.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "People stay healthy or become ill, often as a result of their own behavior.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Emotions a complex state of feeling that results in physical and psychological changes that not influence behavior.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Behavior is learned through interactions with the environment.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "The psychological perspective posits that all behaviors are acquired through conditioning.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Characteristics of a person like age, health, illness, beliefs, values are enabling factors that affecting behavior.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Rewards or punishments are served to strengthen the motivation for behavior.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question: "Imbalances in serotonin can affect mood and behavior.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Personality traits like introversion versus extraversion, which can influence human behavior.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Emotions are arise from various stimuli, including thoughts, experiences, or memories.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Emotion it hasn’t a relation to impaired judgment and fanatism.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Subjective experience of emotions involves the outward expression of emotions.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Thoughts can trigger emotions, which in turn can lead to specific behaviors.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question: "Happiness is one of the more unpleasant emotions.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "There is no relation between happiness and physical health.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question: "Happiness plays a role in decreased longevity.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Stress, depression, and anxiety have been linked to lowered immunity.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Prolonged and severe periods of sadness can turn into depression.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Fear is a powerful emotion that can also play an important role in survival.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Fear can leading to behaviors such as fleeing from danger or preparing to confront a threat.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question: "Disgust and surprise are basic types of emotions.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question: "Dwelling on negative thoughts it is due to sadness.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question: "Emotion is essential for motivation and enthusiasm.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Mental illness means the successful performance of mental functions.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "People with good mental health, they have emotional maturity.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Autonomous behavior refers to the ability of the individual to tolerate tension and frustration.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "A person with good mental health is usually considered mature.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Psychotic disorders are characterized by distorted thinking and perceptions.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Posttraumatic stress disorder is a type of psychotic disorders.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Eating disorders involve preoccupation with food, body weight, and shape leading to dangerous eating behaviors.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question: "Health is the absence of disease or infirmity.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Informational support such as offering real aid in the form of labor, money, time.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "A patient’s understanding of his or her clinical status is seen as equally important as actual physical status in Attribution Model.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "The Humanistic approach suggests that personality is shaped by the need for self-actualization, or the realization of one’s full potential.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Physiological needs include hunger and protection from physical harm.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Motivation inspires individuals to work and exert a low level of performance.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Illness is an abnormal process in which the person’s level of functioning is changed compared with a previous level.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Naturalistic Model views health as a state of disharmony between a human being and his or her environment.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Stress is the psychological and physiological response of an individual seeking to adapt to pressures.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+        {
+          question:
+            "Trait Theory, as proposed by Gordon Allport, suggests that personality is made up of a set of flexible and changing traits.",
+          options: ["True", "False"],
+          correctIndex: 1,
+        },
+        {
+          question:
+            "Carl Rogers' Humanistic theory emphasizes personal growth and self-actualization as key components of personality development.",
+          options: ["True", "False"],
+          correctIndex: 0,
+        },
+      ];
+
+      let currentQuestionIndex = 0;
+      let score = 0;
+
+      function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+      }
+      shuffleArray(allQuestions);
+
+      const startBtn = document.getElementById("start-btn");
+      const nextBtn = document.getElementById("next-btn");
+      const tryAgainBtn = document.getElementById("try-again-btn");
+      const quizBox = document.getElementById("quiz-box");
+      const startBox = document.getElementById("start-box");
+      const questionNumberElement = document.getElementById("question-number");
+      const questionText = document.getElementById("question-text");
+      const answerButtons = document.getElementById("answer-buttons");
+      const resultBox = document.getElementById("result-box");
+      const scoreText = document.getElementById("score-text");
+
+      startBtn.addEventListener("click", startQuiz);
+      nextBtn.addEventListener("click", () => {
+        currentQuestionIndex++;
+        setNextQuestion();
+      });
+      tryAgainBtn.addEventListener("click", startQuiz);
+
+      function startQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        startBox.classList.add("hide");
+        resultBox.classList.add("hide");
+        quizBox.classList.remove("hide");
+        setNextQuestion();
+      }
+
+      function setNextQuestion() {
+        resetState();
+        if (currentQuestionIndex < allQuestions.length) {
+          showQuestion(allQuestions[currentQuestionIndex]);
+        } else {
+          showResult();
+        }
+      }
+
+      function showQuestion(questionObj) {
+        questionNumberElement.textContent = `Question ${
+          currentQuestionIndex + 1
+        } of ${allQuestions.length}`;
+        questionText.textContent = questionObj.question;
+
+        questionObj.options.forEach((option, index) => {
+          const button = document.createElement("button");
+          button.textContent = option;
+          button.classList.add("answer-btn");
+          button.addEventListener("click", () =>
+            selectAnswer(button, index === questionObj.correctIndex)
+          );
+          answerButtons.appendChild(button);
+        });
+      }
+
+      function resetState() {
+        nextBtn.disabled = true;
+        answerButtons.innerHTML = "";
+      }
+
+      function selectAnswer(button, isCorrect) {
+        const buttons = answerButtons.querySelectorAll("button");
+        buttons.forEach((btn) => {
+          btn.disabled = true;
+        });
+
+        if (isCorrect) {
+          button.classList.add("correct");
+          score++;
+        } else {
+          button.classList.add("wrong");
+          const correctButton =
+            buttons[allQuestions[currentQuestionIndex].correctIndex];
+          correctButton.classList.add("correct");
+        }
+
+        nextBtn.disabled = false;
+      }
+
+      function showResult() {
+        quizBox.classList.add("hide");
+        resultBox.classList.remove("hide");
+        scoreText.textContent = `${score} out of ${allQuestions.length} correct`;
+      }
+    </script>
+  </body>
+</html>
